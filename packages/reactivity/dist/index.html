@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import {reactive, effect} from "./reactivity.js"
+    
+    // reactive 让数据变成响应式
+    // effect 副作用，数据变化让effect重新执行， 组件 watch computed 都是基于effect
+    const info = {name: "vue", age: 10}
+    // 对象重复代理，缓存优化
+    // 对象被代理过了再次代理优化
+    const state = reactive(info)
+    const state1 = reactive(info)
+    console.log("[ state ] >", state === state1)
+    console.log("[ state ] >", state.name, state.age)
+
+    // effect 默认会执行一次
+    // 响应式数据变化，重新执行effect
+    // effect(() => {
+    //   app.innerHTML = `姓名：${state.name}，年龄：${state.age}`
+    // })
+    // setTimeout( () => {
+    //   state.age++
+    // }, 1000)
+  </script>
+</body>
+</html>
