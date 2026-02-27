@@ -11,7 +11,7 @@ import esbuild from "esbuild";
 // node中的命令函行参数通过process 来获取 process.argv
 const args = minimist(process.argv.slice(2));
 
-const __filename = fileURLToPath(import.meta.url); // 获取文件的绝对路径 file: -> use
+const __filename = fileURLToPath(import.meta.url); // 获取文件的绝对路径 file: -> /usr
 const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
@@ -29,12 +29,12 @@ esbuild
   .context({
     entryPoints: [entry],
     outfile: resolve(__dirname, `../packages/${target}/dist/${target}.js`),
-    bundle: true,
+    bundle: true, // reactivity 和 shared 会打包到一起
     format, // cjs esm iife
     // minify: true,
     sourcemap: true,
     logLevel: "info",
-    platform: "browser",
+    platform: "browser", // 打包后给浏览器使用
     // target: "es2015",
     globalName: pkg.buildOptions?.name,
   })

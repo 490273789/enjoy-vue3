@@ -1,33 +1,81 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <div id="app"></div>
-  <script type="module">
-    import {reactive, effect} from "./reactivity.js"
-    
-    // reactive 让数据变成响应式
-    // effect 副作用，数据变化让effect重新执行， 组件 watch computed 都是基于effect
-    const info = {name: "vue", age: 10}
-    // 对象重复代理，缓存优化
-    // 对象被代理过了再次代理优化
-    const state = reactive(info)
-    const state1 = reactive(info)
-    console.log("[ state ] >", state === state1)
-    console.log("[ state ] >", state.name, state.age)
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { reactive, effect } from "./reactivity.js";
 
-    // effect 默认会执行一次
-    // 响应式数据变化，重新执行effect
-    // effect(() => {
-    //   app.innerHTML = `姓名：${state.name}，年龄：${state.age}`
-    // })
-    // setTimeout( () => {
-    //   state.age++
-    // }, 1000)
-  </script>
-</body>
+      // reactive 让数据变成响应式
+      // effect 副作用，数据变化让effect重新执行， 组件、watch、computed 都是基于effect实现的
+      // 属性会收集effect，数据会自己记录自己在哪个effect中使用了，稍后数据变化了会找到对应的effect执行
+      const info = { name: "vue", age: 10, flag: true };
+      // 对象重复代理，缓存优化
+      // 对象被代理过了再次代理优化
+      const state = reactive(info);
+      // 如果state被代理过了，一定有get和set方法
+      // const state1 = reactive(info);
+
+      // 已经被代理过的对象就不能在被代理了
+      // const state2 = reactive(state1);
+      // console.log("[ state ] >", state === state1);
+      // console.log("[ state ] >", state.name, state.age);
+
+      // effect 默认会执行一次
+      // 响应式数据变化，重新执行effect
+      // effect(() => {
+      //   app.innerHTML = `姓名：${state.name}，年龄：${state.age}`;
+      // });
+      // setTimeout(() => {
+      //   state.age++;
+      // }, 1000);
+
+      // effect嵌套, 3.0用调用栈来模拟执行过程
+      // [effect1]
+      // [effect1, effect2]
+      // [effect1]
+      // []
+      // 3.2 用树结构
+      // 3.4 用lastEffect
+      // effect(() => {
+      //   app.innerHTML = state.name;
+      //   effect(() => {
+      //     app.innerHTML = state.name;
+      //   });
+      //   app.innerHTML = state.age;
+      // });
+
+      // let runner = effect(
+      //   () => {
+      //     console.log("run++++++");
+      //     state.flag;
+      //     app.innerHTML = state.flag ? state.name : state.age;
+      //   },
+      //   {
+      //     // 自定义调度器
+      //     scheduler: () => {
+      //       console.log("数据更新，不重新渲染"); // AOP，在原有的逻辑上添加其他功能
+      //       runner();
+      //     },
+      //   },
+      // );
+      // setTimeout(() => {
+      //   state.flag = false;
+      //   setTimeout(() => {
+      //     console.log("11111");
+      //     state.name = "xxx";
+      //   }, 1000);
+      // }, 1000);
+
+      // 递归渲染
+      effect(() => {
+        app.innerHTML = state.name;
+        state.name = Math.random();
+      });
+    </script>
+  </body>
 </html>
