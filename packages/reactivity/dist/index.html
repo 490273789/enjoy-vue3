@@ -8,15 +8,15 @@
   <body>
     <div id="app"></div>
     <script type="module">
-      import { reactive, effect } from "./reactivity.js";
-
+      import { reactive, effect, ref } from "./reactivity.js";
+      // import { ref, effect } from "/node_modules/vue/dist/vue.esm-browser.js";
       // reactive 让数据变成响应式
       // effect 副作用，数据变化让effect重新执行， 组件、watch、computed 都是基于effect实现的
       // 属性会收集effect，数据会自己记录自己在哪个effect中使用了，稍后数据变化了会找到对应的effect执行
-      const info = { name: "vue", age: 10, flag: true };
+      // const info = { name: "vue", age: 10, flag: true };
       // 对象重复代理，缓存优化
       // 对象被代理过了再次代理优化
-      const state = reactive(info);
+      // const state = reactive(info);
       // 如果state被代理过了，一定有get和set方法
       // const state1 = reactive(info);
 
@@ -72,10 +72,33 @@
       // }, 1000);
 
       // 递归渲染
+      // effect(() => {
+      //   app.innerHTML = state.name;
+      //   state.name = Math.random();
+      // });
+
+      const flag = ref(true);
+
       effect(() => {
-        app.innerHTML = state.name;
-        state.name = Math.random();
+        app.innerHTML = flag.value ? "19" : "20";
       });
+
+      setTimeout(() => {
+        flag.value = false;
+      }, 2000);
+
+      const info = ref({ name: 1 });
+
+      effect(() => {
+        app.innerHTML = info.value.name;
+      });
+
+      setTimeout(() => {
+        info.value = { name: 2 };
+        setTimeout(() => {
+          info.value.name = 3;
+        }, 2000);
+      }, 2000);
     </script>
   </body>
 </html>
