@@ -86,24 +86,25 @@ function cleanDepEffect(dep, effect) {
 }
 
 export function trackEffect(effect, dep) {
-  // 收集时一个个收集的
-  // 需要重新的去收集依赖 ， 将不需要的移除掉
   // debugger;
+  //
   if (dep.get(effect) !== effect._trackId) {
-    dep.set(effect, effect._trackId); // 更新id
+    // 第一次就是新增dep，以后就是更新_trackId
+    dep.set(effect, effect._trackId);
     // {flag,name}
     // {flag,age}
     let oldDep = effect.deps[effect._depsLength];
     // 如果没有存过
+    // 处理需要新增或者更新的依赖，
+    // 更新 -> 比如name变age
     if (oldDep !== dep) {
+      // 删除掉老的
       if (oldDep) {
-        // 删除掉老的
         cleanDepEffect(oldDep, effect);
       }
-      // 换成新的
-      // 永远按照本次最新的来存放
       effect.deps[effect._depsLength++] = dep;
     } else {
+      // 处理复用的情况，比如flag不变
       effect._depsLength++;
     }
   }

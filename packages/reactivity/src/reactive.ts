@@ -9,8 +9,8 @@ function createReactiveObject(target) {
 
   // 3.0 会创造一个反向映射表
   // 现在会判断他是否是proxy对象
-  // 判断传入的对象是否是proxy
-  // 取ReactiveFlags.IS_REACTIVE这个属性一定会触发get方法，说明是个proxy对象
+  // 如果传入的是proxy对象则直接返回布偶处理
+  // 取ReactiveFlags.IS_REACTIVE这个属性如果会触发get方法，说明是个proxy对象
   if (target[ReactiveFlags.IS_REACTIVE]) return target;
 
   // 一个值被重复的代理，则取缓存

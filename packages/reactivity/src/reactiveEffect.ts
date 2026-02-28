@@ -11,16 +11,18 @@ export const createDep = (cleanup, key) => {
 
 // map {obj: {属性： { effect }}}
 export function track(target, key) {
+  // 没有activeEffect说明不是在effect中还行的，就不需要收集
   if (activeEffect) {
     let depsMap = targetMap.get(target);
 
+    // 处理新增的对象映射
     if (!depsMap) {
-      // 新增的
       targetMap.set(target, (depsMap = new Map()));
     }
 
     let dep = depsMap.get(key);
 
+    // 处理新增的属性映射
     if (!dep) {
       depsMap.set(
         key,
@@ -37,7 +39,7 @@ export function trigger(target, key, newValue, oldValue) {
   const depsMap = targetMap.get(target);
 
   if (!depsMap) {
-    // 找不到对象 直接return即可
+    // 找不到对象，说明没有在对应的effect需要触发， 直接return即可
     return;
   }
   let dep = depsMap.get(key);

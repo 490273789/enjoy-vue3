@@ -8,10 +8,13 @@ export enum ReactiveFlags {
 
 export const mutableHandlers: ProxyHandler<any> = {
   get(target, key, receiver) {
+    // 判断传入的是否是proxy对象
     if (key === ReactiveFlags.IS_REACTIVE) {
       return true;
     }
-    track(target, key); // 收集这个对象上的这个属性，和effect关联在一起
+
+    // 将这个对象上的这个属性，和effect关联在一起
+    track(target, key);
 
     let result = Reflect.get(target, key, receiver);
 
@@ -19,12 +22,11 @@ export const mutableHandlers: ProxyHandler<any> = {
       // 懒代理，当取值是对象的时候，将对象代理
       return reactive(result);
     }
-    // 取值的时候，应该让响应式属性和effect 映射起来
+
     return result;
   },
-  set(target, key, value, receiver) {
-    // 找到属性 让对应的effect重新执行
 
+  set(target, key, value, receiver) {
     let oldValue = target[key];
 
     let result = Reflect.set(target, key, value, receiver);
