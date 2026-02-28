@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { reactive, effect, ref, computed } from "./reactivity.js";
+      // import { ref, effect } from "/node_modules/vue/dist/vue.esm-browser.js";
+
+      // computed 计算属性
+      // computed 执行后的结果是一个ref， 不可变的
+      const state = reactive({ name: "w" });
+      // const aliasName = computed(() => {
+      //   console.log("computed");
+      //   return "@@@" + state.name;
+      // });
+      const aliasName = computed({
+        get: () => {
+          console.log("computed");
+          return "@@@" + state.name;
+        },
+        set: () => {
+          console.log("设置");
+        },
+      });
+      // 多次访问此属性，只会执行一次
+      // 计算属性是具备收集effect的能力的，依赖的值变化  会重新执行依赖的effect
+      // 计算属性维护了一个dirty属性，属性就是true，稍后运行一次会将dirty变为false，并且稍后依赖的值变化后dirty会在变为true
+      // 计算属性也是一个effect，依赖属性会收集这个计算属性，当值变化后，会让computedEffect中的dirty比那味true
+      console.log("aliasName:", aliasName);
+      console.log("aliasName:", aliasName);
+
+      state.name = "S";
+      // 计算属性aliasName，计算属性依赖的值name
+      // 计算属性本身就是一个effect，有一个标识dirty = true， 访问的时候，会触发name属性的get方法（依赖收集）
+      // 将name属性和计算属性做一个映射，当name变化后会触发计算属性的scheduler（触发计算属性收集的effect）
+      // 计算属性可能在effect中使用，当取值计算属性的时候会对当前的effect进行依赖收集
+      // 如果name属性变化了，会通知计算属性将dirty变为true，并且重新触发渲染
+
+      // 依赖的属性 -> 计算属性dirty=true -> 计算属性的scheduler -> 触发计算属性收集的effect
+    </script>
+  </body>
+</html>

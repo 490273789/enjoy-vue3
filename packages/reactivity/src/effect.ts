@@ -1,3 +1,5 @@
+import { DirtyLevels } from "./constants";
+
 export function effect(fn, options?) {
   // 创建一个响应式effect 数据变化后可以重新执行
 
@@ -41,8 +43,9 @@ export class ReactiveEffect {
   _trackId = 0; // 用于记录当前effect执行了几次
   deps = []; // 存放这个effect中使用的响应属性
   _depsLength = 0; // 响应属性的长度
-  public active = true; // 创建的effect是响应式的
+  _dirtyLevel = DirtyLevels.Dirty;
   _running = 0;
+  public active = true; // 创建的effect是响应式的
 
   // fn 用户编写的函数
   // 如果fn中依赖的数据发生变化后，需要重新调用 -> run()
@@ -51,7 +54,16 @@ export class ReactiveEffect {
     public scheduler, // 调度函数
   ) {}
 
+  public get dirty() {
+    return this._dirtyLevel === DirtyLevels.Dirty;
+  }
+
+  public set dirty(v) {
+    this._dirtyLevel = v ? DirtyLevels.Dirty : DirtyLevels.NoDirty;
+  }
+
   run() {
+    this._dirtyLevel = DirtyLevels.NoDirty; // 每次运行后effect变为no_dirty
     // 不做依赖收集
     if (!this.active) {
       return this.fn(); // 不是激活的，执行后，什么都不用做
@@ -63,13 +75,17 @@ export class ReactiveEffect {
       this._running++;
       return this.fn(); // 依赖收集  -> state.name  state.age
     } finally {
-      postCleanEffect(this);
       this._running--;
+      postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
   stop() {
-    this.active = false;
+    if (this.active) {
+      this.active = false; // 后续来实现
+      preCleanEffect(this);
+      postCleanEffect(this);
+    }
   }
 }
 
@@ -119,15 +135,9 @@ export function triggerEffects(dep) {
     // 当前这个值是不脏的，但是触发更新需要将值变为脏值
 
     // 属性依赖了计算属性， 需要让计算属性的drity在变为true
-    // if (effect._dirtyLevel < DirtyLevels.Dirty) {
-    //   effect._dirtyLevel = DirtyLevels.Dirty;
-    // }
-    // if (!effect._running) {
-    //   if (effect.scheduler) {
-    //     // 如果不是正在执行，才能执行
-    //     effect.scheduler(); // -> effect.run()
-    //   }
-    // }
+    if (effect._dirtyLevel < DirtyLevels.Dirty) {
+      effect._dirtyLevel = DirtyLevels.Dirty;
+    }
     // 防止递归渲染
     if (!effect._running) {
       if (effect.scheduler) {

@@ -25,6 +25,7 @@ function postCleanEffect(effect2) {
   }
 }
 var ReactiveEffect = class {
+  // 创建的effect是响应式的
   // fn 用户编写的函数
   // 如果fn中依赖的数据发生变化后，需要重新调用 -> run()
   constructor(fn, scheduler) {
@@ -36,11 +37,18 @@ var ReactiveEffect = class {
     // 存放这个effect中使用的响应属性
     this._depsLength = 0;
     // 响应属性的长度
-    this.active = true;
-    // 创建的effect是响应式的
+    this._dirtyLevel = 4 /* Dirty */;
     this._running = 0;
+    this.active = true;
+  }
+  get dirty() {
+    return this._dirtyLevel === 4 /* Dirty */;
+  }
+  set dirty(v) {
+    this._dirtyLevel = v ? 4 /* Dirty */ : 0 /* NoDirty */;
   }
   run() {
+    this._dirtyLevel = 0 /* NoDirty */;
     if (!this.active) {
       return this.fn();
     }
@@ -51,13 +59,17 @@ var ReactiveEffect = class {
       this._running++;
       return this.fn();
     } finally {
-      postCleanEffect(this);
       this._running--;
+      postCleanEffect(this);
       activeEffect = lastEffect;
     }
   }
   stop() {
-    this.active = false;
+    if (this.active) {
+      this.active = false;
+      preCleanEffect(this);
+      postCleanEffect(this);
+    }
   }
 };
 function cleanDepEffect(dep, effect2) {
@@ -82,6 +94,9 @@ function trackEffect(effect2, dep) {
 }
 function triggerEffects(dep) {
   for (const effect2 of dep.keys()) {
+    if (effect2._dirtyLevel < 4 /* Dirty */) {
+      effect2._dirtyLevel = 4 /* Dirty */;
+    }
     if (!effect2._running) {
       if (effect2.scheduler) {
         effect2.scheduler();
