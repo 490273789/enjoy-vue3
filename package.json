@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.js reactivity -f esm",
-    "dev:rd": "node scripts/dev.js runtime-dom -f esm"
+    "dev:rd": "node scripts/dev.js runtime-dom -f esm",
+    "dev:rc": "node scripts/dev.js runtime-core -f esm"
   },
   "keywords": [],
   "author": "",
