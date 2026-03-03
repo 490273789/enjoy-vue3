@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      // runtime-dom 就是提供一些列dom操作的API
+      // runtime-dom -> runtime-core -> reactivity
+      import {
+        createRenderer,
+        render,
+        h,
+      } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.js";
+
+      // createRenderer 我们可以自己创建渲染器 - 自己提供渲染方式
+      // render 用内置的渲染器来进行渲染 - 渲染dom元素的
+      // h方法可以创建一个虚拟dom，参数 type,propsOrChildren,children
+
+      console.log(createRenderer, render);
+      console.log(render);
+      console.log(h);
+      let ele = h("h1", "handsome sn");
+
+      //   render(ele, app);
+      //   console.log(ele);
+
+      const renderer = createRenderer({
+        createElement(type) {
+          console.log(type);
+          // 需要创建一个元素
+          return document.createElement(type);
+        },
+        setElementText(el, text) {
+          console.log(el);
+          console.log(text);
+          el.textContent = text;
+        },
+        insert(el, container) {
+          container.appendChild(el);
+        },
+      });
+      renderer.render(ele, app);
+
+      // render函数 参数 可以是1个 可以是2个，或3个（标准的），超过三个，从第三个开始都是儿子
+      // h(类型，属性， 儿子)
+      // h(类型，儿子)
+      // 第二个参数可能是属性，或者虚拟节点（__v_isVNode）
+      // 第二个参事就是一个数组 -> 儿子
+      // 其他情况就是属性
+      // 直接传递非对象的就是文本
+      // 三个参数的时候，第二个只能是属性
+      // 超过三个参数后面都是儿子
+      // const ele1 = h("div", 'adc', 'abc');
+      const ele1 = h("div", { a: 1 });
+    </script>
+  </body>
+</html>
